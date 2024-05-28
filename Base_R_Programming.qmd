@@ -1,0 +1,103 @@
+# Basic Vector practice
+Creating 2 vectors of blood pressure, before and after treatment. Labeling by patient. Finding a difference between post treatment bp and pre treatment bp and its mean. Identifying which have positive change and their mean.
+```{r Task 1}
+pre<-c(130,128,116,124,133,134,118,126,114,127,141,138,128,140,137,131,120,128,139,135)
+post<-c(114,98,113,99,107,116,113,111,119,117,101,119,130,122,106,106,124,102,117,113)
+
+names(pre)<-c(paste("Subject", 1:20, sep="_"))
+names(post)<-c(paste("Subject", 1:20, sep="_"))
+
+change<-c(pre-post)
+
+mean(change)
+
+which(change>0)
+
+positive<-which(change>0)
+
+mean(positive)
+
+```
+# Data Frame Practice
+Creating data frame of patient, pre, post, and change bp. Adding a new column that computes true if post bp is less than 120.
+```{r Task 2}
+bp_df<-data.frame("pre_bp"=pre,"post_bp"=post,"diff_bp"=change)
+
+bp_df[bp_df$diff_bp < 0, ]
+
+bp_df$low_bp<-c(bp_df$post_bp < 120)
+
+knitr::kable(bp_df)
+
+```
+# List Practice
+Creating new data set that is for a control group. Making a list with the treatment and placebo data frames. Accessing the first element 3 different ways. Then accessing the pre bp vector for the placebo group.
+```{r Task 3}
+placebo_pre<-c(138,135,147,117,152,134,114,121,131,130)
+placebo_post<-c(105,136,123,130,134,143,135,139,120,124)
+placebo_diff<-placebo_post-placebo_pre
+names(placebo_pre)<-c(paste("Subject", 1:10, sep="_"))
+names(placebo_post)<-c(paste("Subject", 1:10, sep="_"))
+
+placebo_df<-data.frame("pre_bp"=placebo_pre, "post_bp"=placebo_post, "diff_bp"=placebo_diff)
+
+placebo_df$low_bp<-c(placebo_df$post_bp < 120)
+
+group<-list(treatment=bp_df,placebo=placebo_df)
+
+group[1]
+group[[1]]
+group["treatment"]
+
+group$placebo$pre_bp
+
+```
+# Control Flow Practice
+Creating a column that categorizes post bp by optimal (≤ 120), borderline (120 < bp ≤ 130), and high (> 130) for both treatment and placebo.
+```{r Task 4}
+bp_df$status<-character(20)
+placebo_df$status<-character(10)
+
+for(i in 1:length(bp_df$post_bp)){
+  if (bp_df$post_bp[i] >= 130){
+  bp_df$status="high" 
+    } else if (bp_df$post_bp[i] > 120) {
+      bp_df$status="borderline" 
+        } else if (bp_df$post_bp[i] <= 120) {
+          bp_df$status="optimal"
+        } else {
+          bp_df$status="error"
+        }
+}
+
+for(i in 1:length(placebo_df$post_bp)){
+  if (placebo_df$post_bp[i] >= 130){
+  placebo_df$status="high" 
+    } else if (placebo_df$post_bp[i] > 120) {
+      placebo_df$status="borderline" 
+        } else if (placebo_df$post_bp[i] <= 120) {
+          placebo_df$status="optimal"
+        } else {
+          placebo_df$status="error"
+        }
+}
+```
+
+# Functions
+Writing a function to calculate statistics on pre, post, and difference bp for both treatment and placebo.
+```{r Task 5}
+stats<-function(bp_df, placebo_df, stat="mean"){
+  my_fun<-get(stat)
+  label<-c("treatment_pre", "treatment_post", "treatment_diff", "placebo_pre", "placebo_post", "placebo_diff")
+  label_stat<-c(paste(label, stat, sep="_"))
+  values<-c(my_fun(bp_df$pre_bp), my_fun(bp_df$post_bp), my_fun(bp_df$diff_bp), my_fun(placebo_df$pre_bp), my_fun(placebo_df$post_bp), my_fun(placebo_df$diff_bp))
+  names(values)<-label_stat
+  return(values)
+}
+
+stats(bp_df,placebo_df)
+stats(bp_df,placebo_df, stat="var")
+stats(bp_df,placebo_df, stat="sd")
+stats(bp_df,placebo_df, stat="min")
+stats(bp_df,placebo_df, stat="max")
+```
